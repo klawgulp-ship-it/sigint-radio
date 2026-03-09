@@ -10,6 +10,7 @@
     "start": "vite preview --host 0.0.0.0 --port ${PORT:-3000}"
   },
   "dependencies": {
+    "hls.js": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

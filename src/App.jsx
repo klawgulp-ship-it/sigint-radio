@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Hls from 'hls.js';
 import { STATIONS, REGIONS, TRANSCRIPTION_PHRASES } from './stations.js';
 import { TRANSLATION_SYSTEM_PROMPT, WHISPER_CONFIG, LANGUAGE_HINTS } from './translationEngine.js';
 
@@ -53,6 +54,7 @@ export default function App() {
   const [pipelineStatus, setPipelineStatus] = useState('');
 
   const audioRef = useRef(null);
+  const hlsRef = useRef(null);
   const audioCtxRef = useRef(null);
   const analyserRef = useRef(null);
   const gainRef = useRef(null);
@@ -77,45 +79,104 @@ export default function App() {
     return () => { if (ws) ws.close(); };
   }, []);
 
-  const playStation = useCallback(async (station) => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+  const cleanupAudio = useCallback(() => {
+    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current.load(); }
     if (sourceRef.current) { try { sourceRef.current.disconnect(); } catch(e){} sourceRef.current = null; }
     if (transcribeRef.current) clearInterval(transcribeRef.current);
     if (pipelineRef.current) clearInterval(pipelineRef.current);
+  }, []);
 
+  const initAudioContext = useCallback(async () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyserRef.current = audioCtxRef.current.createAnalyser(); analyserRef.current.fftSize = 256;
+      gainRef.current = audioCtxRef.current.createGain();
+      gainRef.current.connect(analyserRef.current); analyserRef.current.connect(audioCtxRef.current.destination);
+    }
+    if (audioCtxRef.current.state === 'suspended') await audioCtxRef.current.resume();
+  }, []);
+
+  const connectAndPlay = useCallback((audio) => {
+    try { if (!sourceRef.current) { sourceRef.current = audioCtxRef.current.createMediaElementSource(audio); sourceRef.current.connect(gainRef.current); } } catch(e) {}
+    gainRef.current.gain.value = volume;
+    audio.play().catch(() => {});
+    setIsPlaying(true);
+    setStats(prev => ({ ...prev, sessions: prev.sessions + 1, langs: new Set([...prev.langs, activeStation?.lang].filter(Boolean)) }));
+  }, [volume, activeStation]);
+
+  const isHLS = (url) => /\.m3u8(\?|$)/i.test(url);
+
+  const tryPlaySource = useCallback((audio, url, label) => {
+    return new Promise((resolve) => {
+      if (isHLS(url) && Hls.isSupported()) {
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true, xhrSetup: (xhr) => { xhr.timeout = 10000; } });
+        hlsRef.current = hls;
+        hls.loadSource(url);
+        hls.attachMedia(audio);
+        const timer = setTimeout(() => { resolve(false); }, 12000);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => { clearTimeout(timer); resolve(true); });
+        hls.on(Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) { clearTimeout(timer); hls.destroy(); hlsRef.current = null; resolve(false); }
+        });
+      } else if (isHLS(url) && audio.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari native HLS
+        audio.src = url;
+        const timer = setTimeout(() => { resolve(false); }, 10000);
+        audio.addEventListener('canplay', () => { clearTimeout(timer); resolve(true); }, { once: true });
+        audio.addEventListener('error', () => { clearTimeout(timer); resolve(false); }, { once: true });
+        audio.load();
+      } else {
+        audio.src = url;
+        const timer = setTimeout(() => { resolve(false); }, 10000);
+        audio.addEventListener('canplay', () => { clearTimeout(timer); resolve(true); }, { once: true });
+        audio.addEventListener('error', () => { clearTimeout(timer); resolve(false); }, { once: true });
+        audio.load();
+      }
+    });
+  }, []);
+
+  const playStation = useCallback(async (station) => {
+    cleanupAudio();
     setActiveStation(station); setIsPlaying(false); setTranscription([]); setIsTranscribing(false); setPipelineStatus('');
 
     try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        analyserRef.current = audioCtxRef.current.createAnalyser(); analyserRef.current.fftSize = 256;
-        gainRef.current = audioCtxRef.current.createGain();
-        gainRef.current.connect(analyserRef.current); analyserRef.current.connect(audioCtxRef.current.destination);
-      }
-      if (audioCtxRef.current.state === 'suspended') await audioCtxRef.current.resume();
-
+      await initAudioContext();
       const audio = new Audio();
       audio.crossOrigin = 'anonymous';
-      audio.src = API_URL ? `${API_URL}/api/proxy?url=${encodeURIComponent(station.url)}` : station.url;
       audioRef.current = audio;
 
-      audio.addEventListener('canplay', () => {
-        try { if (!sourceRef.current) { sourceRef.current = audioCtxRef.current.createMediaElementSource(audio); sourceRef.current.connect(gainRef.current); } } catch(e) {}
-        gainRef.current.gain.value = volume; audio.play(); setIsPlaying(true);
-        setStats(prev => ({ ...prev, sessions: prev.sessions + 1, langs: new Set([...prev.langs, station.lang]) }));
-      }, { once: true });
+      // Build list of URLs to try in order
+      const urls = [];
+      if (API_URL) urls.push({ url: `${API_URL}/api/proxy?url=${encodeURIComponent(station.url)}`, label: 'proxy' });
+      urls.push({ url: station.url, label: 'direct' });
+      // For HLS via proxy, also try direct HLS with hls.js
+      if (API_URL && isHLS(station.url)) urls.splice(1, 0, { url: station.url, label: 'direct-hls' });
 
-      audio.addEventListener('error', () => {
-        setTranscription(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), type: 'error', text: `⚠ Stream error — ${station.name}. ${API_URL ? 'May be offline.' : 'No backend — set VITE_API_URL.'}` }, ...prev]);
-      });
-      audio.load();
-    } catch (err) { console.error(err); }
-  }, [volume]);
+      let connected = false;
+      for (const { url, label } of urls) {
+        console.log(`[AUDIO] Trying ${label}: ${url.slice(0, 80)}...`);
+        // Reset for each attempt
+        if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+        audio.src = ''; audio.load();
+
+        const ok = await tryPlaySource(audio, url, label);
+        if (ok) {
+          console.log(`[AUDIO] Connected via ${label}`);
+          connectAndPlay(audio);
+          connected = true;
+          break;
+        }
+      }
+
+      if (!connected) {
+        setTranscription(prev => [{ id: Date.now(), time: new Date().toLocaleTimeString(), type: 'error', text: `⚠ Could not connect to ${station.name} — stream may be offline.` }, ...prev]);
+      }
+    } catch (err) { console.error('[AUDIO]', err); }
+  }, [volume, cleanupAudio, initAudioContext, connectAndPlay, tryPlaySource]);
 
   const stopPlayback = () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
-    if (transcribeRef.current) clearInterval(transcribeRef.current);
-    if (pipelineRef.current) clearInterval(pipelineRef.current);
+    cleanupAudio();
     setIsPlaying(false); setActiveStation(null); setIsTranscribing(false); setPipelineStatus('');
   };
 

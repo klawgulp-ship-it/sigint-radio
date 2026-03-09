@@ -111,22 +111,48 @@ app.get('/api/proxy', async (req, res) => {
     const upstream = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (SIGINT Radio Stream Player)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': '*/*',
+        'Referer': new URL(url).origin + '/',
       },
     });
     clearTimeout(timeout);
 
     if (!upstream.ok) return res.status(upstream.status).json({ error: `Upstream ${upstream.status}` });
 
-    // Forward content-type
-    const ct = upstream.headers.get('content-type');
-    if (ct) res.setHeader('Content-Type', ct);
+    const ct = upstream.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Cache-Control', 'no-cache');
+
+    // HLS manifest — rewrite URLs to go through proxy
+    const isM3U8 = url.endsWith('.m3u8') || ct.includes('mpegurl') || ct.includes('x-mpegURL');
+    if (isM3U8) {
+      const text = await upstream.text();
+      const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+      const selfBase = `${req.protocol}://${req.get('host')}/api/proxy?url=`;
+
+      const rewritten = text.split('\n').map(line => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) return line;
+        // Resolve relative URLs and proxy them
+        let segUrl;
+        if (trimmed.startsWith('http')) {
+          segUrl = trimmed;
+        } else {
+          segUrl = new URL(trimmed, baseUrl).href;
+        }
+        return selfBase + encodeURIComponent(segUrl);
+      }).join('\n');
+
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+      return res.send(rewritten);
+    }
+
+    // Regular stream — pipe through
+    if (ct) res.setHeader('Content-Type', ct);
     res.setHeader('Transfer-Encoding', 'chunked');
 
-    // Pipe the stream
     const reader = upstream.body.getReader();
     const pump = async () => {
       try {
