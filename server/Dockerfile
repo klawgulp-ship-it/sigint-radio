@@ -1,7 +1,7 @@
 FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --production
+RUN npm install --production
 COPY . .
 ENV PORT=4000
 EXPOSE 4000
