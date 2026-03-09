@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ENV VITE_API_URL=https://sigint-api-production.up.railway.app
 RUN npm run build
 
 FROM node:18-alpine
