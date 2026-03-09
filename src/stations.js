@@ -1,0 +1,291 @@
+// ============================================================
+// SIGINT RADIO — Global Station Database
+// Each station: id, name, country, lang, lat, lng, url, region, freq
+// ============================================================
+
+export const STATIONS = [
+  // ─── MIDDLE EAST ───────────────────────────────────────────
+  { id: "ir-irib",     name: "IRIB Radio Iran",        country: "Iran",          lang: "Farsi",     lat: 35.69, lng: 51.39, url: "https://radio-prs.media.gov.ir/live/smil:radio-prs.smil/playlist.m3u8", region: "Middle East", freq: "558 AM" },
+  { id: "ir-javan",    name: "Radio Javan FM",          country: "Iran",          lang: "Farsi",     lat: 35.70, lng: 51.42, url: "https://stream.radiojavan.com/", region: "Middle East", freq: "Online" },
+  { id: "ir-farda",    name: "Radio Farda (RFE/RL)",    country: "Iran",          lang: "Farsi",     lat: 35.68, lng: 51.38, url: "https://rfe-channel-07-hls.akamaized.net/hls/live/2034181/rfe-channel-07/index.m3u8", region: "Middle East", freq: "SW 1575" },
+  { id: "ir-zamaneh",  name: "Radio Zamaneh",           country: "Iran",          lang: "Farsi",     lat: 35.71, lng: 51.40, url: "https://stream.radio.co/s7e1aa06ed/listen", region: "Middle East", freq: "Online" },
+  { id: "il-kan",      name: "Kan Reshet Bet",          country: "Israel",        lang: "Hebrew",    lat: 32.07, lng: 34.78, url: "https://kan.mediaelb.kfrproxy.co.il/CanBet/CanBet/icecast.audio", region: "Middle East", freq: "95.5 FM" },
+  { id: "il-galatz",   name: "Galei Tzahal (IDF)",      country: "Israel",        lang: "Hebrew",    lat: 32.08, lng: 34.77, url: "https://glzwizzlv.bynetcdn.com/glz_mp3", region: "Middle East", freq: "102.3 FM" },
+  { id: "eg-nile",     name: "Nile FM",                 country: "Egypt",         lang: "Arabic",    lat: 30.04, lng: 31.24, url: "https://stream.radio.co/s07c81c9c5/listen", region: "Middle East", freq: "104.2 FM" },
+  { id: "eg-quran",    name: "Idha'at Al-Quran",        country: "Egypt",         lang: "Arabic",    lat: 30.05, lng: 31.23, url: "https://stream.radio.co/s13d75a3e8/listen", region: "Middle East", freq: "98.2 FM" },
+  { id: "sa-quran",    name: "Saudi Quran Radio",       country: "Saudi Arabia",  lang: "Arabic",    lat: 21.42, lng: 39.83, url: "https://stream.radio.co/sf81fd0f4a/listen", region: "Middle East", freq: "94.8 FM" },
+  { id: "ae-dubai",    name: "Dubai Eye 103.8",         country: "UAE",           lang: "English",   lat: 25.20, lng: 55.27, url: "https://stream.radio.co/s1075a5e5f/listen", region: "Middle East", freq: "103.8 FM" },
+  { id: "qa-aljazeera",name: "Al Jazeera Audio",        country: "Qatar",         lang: "Arabic",    lat: 25.29, lng: 51.53, url: "https://live-hls-web-aja.getaj.net/AJA/01.m3u8", region: "Middle East", freq: "Online" },
+  { id: "tr-trt",      name: "TRT Radyo 1",             country: "Turkey",        lang: "Turkish",   lat: 39.93, lng: 32.86, url: "https://radyocanli.trt.net.tr/trt-radyo1.mp3", region: "Middle East", freq: "95.6 FM" },
+  { id: "tr-voice",    name: "Voice of Turkey",         country: "Turkey",        lang: "Turkish",   lat: 39.92, lng: 32.85, url: "https://radyocanli.trt.net.tr/trt-turku.mp3", region: "Middle East", freq: "SW" },
+  { id: "iq-alsumaria", name: "Al Sumaria Radio",       country: "Iraq",          lang: "Arabic",    lat: 33.31, lng: 44.37, url: "https://stream.radio.co/scf4f37cfa/listen", region: "Middle East", freq: "93.1 FM" },
+  { id: "lb-voice",    name: "Voice of Lebanon",        country: "Lebanon",       lang: "Arabic",    lat: 33.89, lng: 35.50, url: "https://stream.radio.co/sb38abc8c5/listen", region: "Middle East", freq: "100.5 FM" },
+
+  // ─── EUROPE ────────────────────────────────────────────────
+  { id: "fr-fip",      name: "FIP Radio",               country: "France",        lang: "French",    lat: 48.86, lng: 2.35,  url: "https://icecast.radiofrance.fr/fip-midfi.mp3", region: "Europe", freq: "105.1 FM" },
+  { id: "fr-rfi",      name: "RFI Monde",               country: "France",        lang: "French",    lat: 48.87, lng: 2.33,  url: "https://icecast.radiofrance.fr/rfimonde-midfi.mp3", region: "Europe", freq: "89.0 FM" },
+  { id: "de-dlf",      name: "Deutschlandfunk",         country: "Germany",       lang: "German",    lat: 50.73, lng: 7.10,  url: "https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3", region: "Europe", freq: "97.7 FM" },
+  { id: "de-wdr",      name: "WDR 5",                   country: "Germany",       lang: "German",    lat: 50.94, lng: 6.96,  url: "https://wdr-wdr5-live.icecastssl.wdr.de/wdr/wdr5/live/mp3/128/stream.mp3", region: "Europe", freq: "88.8 FM" },
+  { id: "ru-mayak",    name: "Radio Mayak",             country: "Russia",        lang: "Russian",   lat: 55.76, lng: 37.62, url: "https://icecast-vgtrk.cdnvideo.ru/mayakfm_mp3_128kbps", region: "Europe", freq: "103.4 FM" },
+  { id: "ru-echo",     name: "Radio Echo (Archive)",    country: "Russia",        lang: "Russian",   lat: 55.75, lng: 37.60, url: "https://stream.radio.co/s2dfde6b2a/listen", region: "Europe", freq: "91.2 FM" },
+  { id: "ua-hromadske",name: "Hromadske Radio",         country: "Ukraine",       lang: "Ukrainian", lat: 50.45, lng: 30.52, url: "https://stream.hromadske.ua/radio", region: "Europe", freq: "93.5 FM" },
+  { id: "ua-nrcu",     name: "UR1 Suspilne",            country: "Ukraine",       lang: "Ukrainian", lat: 50.44, lng: 30.53, url: "https://radio.nrcu.gov.ua:8443/ur1-mp3", region: "Europe", freq: "72.0 FM" },
+  { id: "pl-jedynka",  name: "Polskie Radio 1",         country: "Poland",        lang: "Polish",    lat: 52.23, lng: 21.01, url: "https://mp3.polskieradio.pl/", region: "Europe", freq: "93.3 FM" },
+  { id: "es-rne",      name: "RNE Radio Nacional",      country: "Spain",         lang: "Spanish",   lat: 40.42, lng: -3.70, url: "https://rtvelivestreamv3.akamaized.net/rtvesec/rne/rne_r1_main.mp3", region: "Europe", freq: "88.2 FM" },
+  { id: "it-rai",      name: "RAI Radio 1",             country: "Italy",         lang: "Italian",   lat: 41.90, lng: 12.50, url: "https://icestreaming.rai.it/1.mp3", region: "Europe", freq: "89.7 FM" },
+  { id: "nl-radio1",   name: "NPO Radio 1",             country: "Netherlands",   lang: "Dutch",     lat: 52.37, lng: 4.90,  url: "https://icecast.omroep.nl/radio1-bb-mp3", region: "Europe", freq: "98.9 FM" },
+  { id: "se-sr",       name: "Sveriges Radio P1",       country: "Sweden",        lang: "Swedish",   lat: 59.33, lng: 18.07, url: "https://sverigesradio.se/topsy/direkt/132-hi-mp3.m3u8", region: "Europe", freq: "88.0 FM" },
+  { id: "no-nrk",      name: "NRK P1",                  country: "Norway",        lang: "Norwegian", lat: 59.91, lng: 10.75, url: "https://lyd.nrk.no/nrk_radio_p1_ostlandssendingen_mp3_h", region: "Europe", freq: "88.7 FM" },
+  { id: "fi-yle",      name: "Yle Radio 1",             country: "Finland",       lang: "Finnish",   lat: 60.17, lng: 24.94, url: "https://yleradiolive.akamaized.net/hls/live/2027678/in-YleRadio1/128/variant.m3u8", region: "Europe", freq: "87.9 FM" },
+  { id: "ro-radioro",  name: "Radio România Actualități",country: "Romania",      lang: "Romanian",  lat: 44.43, lng: 26.10, url: "https://stream.radio.co/sb7da9d1f0/listen", region: "Europe", freq: "91.8 FM" },
+  { id: "gr-era",      name: "ERA 1 Athens",            country: "Greece",        lang: "Greek",     lat: 37.97, lng: 23.73, url: "https://stream.radio.co/s0f69a02c3/listen", region: "Europe", freq: "91.6 FM" },
+  { id: "cz-radiozurnal",name: "Radiožurnál",           country: "Czech Republic",lang: "Czech",     lat: 50.08, lng: 14.44, url: "https://rozhlas.stream/radiozurnal_mp3_128.mp3", region: "Europe", freq: "94.6 FM" },
+
+  // ─── ASIA & PACIFIC ────────────────────────────────────────
+  { id: "jp-nhk",      name: "NHK Radio 1",             country: "Japan",         lang: "Japanese",  lat: 35.68, lng: 139.77, url: "https://radio-stream.nhk.jp/hls/live/2023501/nhkradiruakr1/master.m3u8", region: "Asia", freq: "594 AM" },
+  { id: "kr-kbs",      name: "KBS 1Radio",              country: "South Korea",   lang: "Korean",    lat: 37.57, lng: 126.98, url: "https://kong.kbs.co.kr/listener/1radio_m.m3u8", region: "Asia", freq: "97.3 FM" },
+  { id: "kp-kcbs",     name: "KCBS Pyongyang (Relay)",  country: "North Korea",   lang: "Korean",    lat: 39.02, lng: 125.75, url: "https://stream.radio.co/sda7de92c5/listen", region: "Asia", freq: "720 AM" },
+  { id: "cn-cri",      name: "CRI China Radio Intl",    country: "China",         lang: "Mandarin",  lat: 39.91, lng: 116.40, url: "https://sk.cri.cn/am846.mp3", region: "Asia", freq: "846 AM" },
+  { id: "cn-cnr",      name: "CNR Voice of China",      country: "China",         lang: "Mandarin",  lat: 39.90, lng: 116.41, url: "https://sk.cri.cn/hxzq.mp3", region: "Asia", freq: "106.1 FM" },
+  { id: "tw-rti",      name: "RTI Radio Taiwan",        country: "Taiwan",        lang: "Mandarin",  lat: 25.03, lng: 121.57, url: "https://stream.rti.org.tw:443/radio/live_3", region: "Asia", freq: "Online" },
+  { id: "in-air",      name: "All India Radio News",    country: "India",         lang: "Hindi",     lat: 28.61, lng: 77.23, url: "https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/playlist.m3u8", region: "Asia", freq: "1008 AM" },
+  { id: "in-vividh",   name: "AIR Vividh Bharati",      country: "India",         lang: "Hindi",     lat: 19.08, lng: 72.88, url: "https://air.pc.cdn.bitgravity.com/air/live/pbaudio059/playlist.m3u8", region: "Asia", freq: "100.1 FM" },
+  { id: "pk-ptv",      name: "Radio Pakistan",          country: "Pakistan",      lang: "Urdu",      lat: 33.69, lng: 73.04, url: "https://stream.radio.co/sd3e3b4c91/listen", region: "Asia", freq: "585 AM" },
+  { id: "af-azadi",    name: "Radio Azadi (RFE/RL)",    country: "Afghanistan",   lang: "Dari/Pashto",lat: 34.53, lng: 69.17, url: "https://rfe-channel-02-hls.akamaized.net/hls/live/2034176/rfe-channel-02/index.m3u8", region: "Asia", freq: "1296 AM" },
+  { id: "th-fm91",     name: "FM91 Thailand",           country: "Thailand",      lang: "Thai",      lat: 13.76, lng: 100.50, url: "https://stream.radio.co/s0553e0d6e/listen", region: "Asia", freq: "91.0 FM" },
+  { id: "vn-vov",      name: "VOV Voice of Vietnam",    country: "Vietnam",       lang: "Vietnamese",lat: 21.03, lng: 105.85, url: "https://stream.radio.co/se57f787b3/listen", region: "Asia", freq: "100.0 FM" },
+  { id: "ph-dzbb",     name: "DZBB Super Radyo",        country: "Philippines",   lang: "Filipino",  lat: 14.60, lng: 120.98, url: "https://stream.radio.co/s7fc2a7aec/listen", region: "Asia", freq: "594 AM" },
+  { id: "my-bfm",      name: "BFM 89.9",                country: "Malaysia",      lang: "English",   lat: 3.14,  lng: 101.69, url: "https://stream.radio.co/s50c81e0c8/listen", region: "Asia", freq: "89.9 FM" },
+  { id: "au-abc",      name: "ABC Radio National",      country: "Australia",     lang: "English",   lat: -33.87, lng: 151.21, url: "https://live-radio01.mediahubaustralia.com/2RNW/mp3/", region: "Asia", freq: "576 AM" },
+  { id: "nz-rnz",      name: "RNZ National",            country: "New Zealand",   lang: "English",   lat: -41.29, lng: 174.78, url: "https://radionz.streamguys1.com/national_mp3", region: "Asia", freq: "101.3 FM" },
+  { id: "mm-dvb",      name: "DVB Radio (Burma)",       country: "Myanmar",       lang: "Burmese",   lat: 16.87, lng: 96.20, url: "https://stream.radio.co/sba8e4e1c3/listen", region: "Asia", freq: "Online" },
+  { id: "bd-bbc-bangla",name: "BBC Bangla",             country: "Bangladesh",    lang: "Bengali",   lat: 23.81, lng: 90.41, url: "https://stream.live.vc.bbcmedia.co.uk/bbc_bangla_radio", region: "Asia", freq: "Online" },
+
+  // ─── AMERICAS ──────────────────────────────────────────────
+  { id: "us-npr",      name: "NPR News",                country: "USA",           lang: "English",   lat: 38.90, lng: -77.04, url: "https://npr-ice.streamguys1.com/live.mp3", region: "Americas", freq: "88.5 FM" },
+  { id: "us-wbez",     name: "WBEZ Chicago",            country: "USA",           lang: "English",   lat: 41.88, lng: -87.63, url: "https://stream.wbez.org/wbez128.mp3", region: "Americas", freq: "91.5 FM" },
+  { id: "us-kcrw",     name: "KCRW Santa Monica",       country: "USA",           lang: "English",   lat: 34.02, lng: -118.49, url: "https://kcrw.streamguys1.com/kcrw_192k_mp3_on_air", region: "Americas", freq: "89.9 FM" },
+  { id: "us-voa",      name: "Voice of America",        country: "USA",           lang: "English",   lat: 38.89, lng: -77.01, url: "https://voa-ingest.akamaized.net/hls/live/2035190/161_352R/playlist.m3u8", region: "Americas", freq: "SW" },
+  { id: "cu-habana",   name: "Radio Habana Cuba",       country: "Cuba",          lang: "Spanish",   lat: 23.11, lng: -82.37, url: "https://stream.radio.co/s5c52f5ee8/listen", region: "Americas", freq: "6000 SW" },
+  { id: "br-cultura",  name: "Rádio Cultura Brasil",    country: "Brazil",        lang: "Portuguese",lat: -23.55, lng: -46.63, url: "https://stream.radio.co/s0aa1e6e4a/listen", region: "Americas", freq: "103.3 FM" },
+  { id: "br-bandnews", name: "BandNews FM",             country: "Brazil",        lang: "Portuguese",lat: -22.91, lng: -43.17, url: "https://stream.radio.co/s3f1b5df30/listen", region: "Americas", freq: "90.3 FM" },
+  { id: "ar-nacional", name: "Radio Nacional",          country: "Argentina",     lang: "Spanish",   lat: -34.60, lng: -58.38, url: "https://sa.mp3.icecast.magma.edge-access.net/sc_rad39", region: "Americas", freq: "870 AM" },
+  { id: "mx-unam",     name: "Radio UNAM",              country: "Mexico",        lang: "Spanish",   lat: 19.43, lng: -99.13, url: "https://stream.radio.co/se4cd43e08/listen", region: "Americas", freq: "96.1 FM" },
+  { id: "co-rcn",      name: "RCN Radio",               country: "Colombia",      lang: "Spanish",   lat: 4.71,  lng: -74.07, url: "https://stream.radio.co/s18df8e69b/listen", region: "Americas", freq: "93.9 FM" },
+  { id: "ve-rnv",      name: "RNV Venezuela",           country: "Venezuela",     lang: "Spanish",   lat: 10.50, lng: -66.92, url: "https://stream.radio.co/s51d7ab5e4/listen", region: "Americas", freq: "630 AM" },
+  { id: "cl-cooperativa",name: "Radio Cooperativa",     country: "Chile",         lang: "Spanish",   lat: -33.45, lng: -70.67, url: "https://stream.radio.co/s44e5df5c6/listen", region: "Americas", freq: "93.3 FM" },
+  { id: "ca-cbc",      name: "CBC Radio 1",             country: "Canada",        lang: "English",   lat: 43.65, lng: -79.38, url: "https://cbcliveradio-lh.akamaihd.net/i/CBCR1_TOR@382281/master.m3u8", region: "Americas", freq: "99.1 FM" },
+
+  // ─── AFRICA ────────────────────────────────────────────────
+  { id: "ng-wazobia",  name: "Wazobia FM",              country: "Nigeria",       lang: "Pidgin",    lat: 6.45,  lng: 3.41,  url: "https://stream.radio.co/s9e2860c85/listen", region: "Africa", freq: "95.1 FM" },
+  { id: "ng-bbc-hausa",name: "BBC Hausa",               country: "Nigeria",       lang: "Hausa",     lat: 12.00, lng: 8.52,  url: "https://stream.live.vc.bbcmedia.co.uk/bbc_hausa_radio", region: "Africa", freq: "Online" },
+  { id: "za-safm",     name: "SAFM",                    country: "South Africa",  lang: "English",   lat: -33.93, lng: 18.42, url: "https://stream.radio.co/sfa9a45a12/listen", region: "Africa", freq: "104.6 FM" },
+  { id: "ke-citizen",  name: "Citizen Radio",           country: "Kenya",         lang: "Swahili",   lat: -1.29, lng: 36.82, url: "https://stream.radio.co/sf2c0c63e8/listen", region: "Africa", freq: "106.7 FM" },
+  { id: "et-fana",     name: "Fana Radio",              country: "Ethiopia",      lang: "Amharic",   lat: 9.02,  lng: 38.75, url: "https://stream.radio.co/s38c7b3e81/listen", region: "Africa", freq: "98.1 FM" },
+  { id: "gh-joy",      name: "Joy FM",                  country: "Ghana",         lang: "English",   lat: 5.60,  lng: -0.19, url: "https://stream.radio.co/s183e6a7c0/listen", region: "Africa", freq: "99.7 FM" },
+  { id: "tz-clouds",   name: "Clouds FM",               country: "Tanzania",      lang: "Swahili",   lat: -6.79, lng: 39.28, url: "https://stream.radio.co/sd413c8d6e/listen", region: "Africa", freq: "88.4 FM" },
+  { id: "sd-bbc-arabic",name: "BBC Arabic Service",     country: "Sudan",         lang: "Arabic",    lat: 15.50, lng: 32.56, url: "https://stream.live.vc.bbcmedia.co.uk/bbc_arabic_radio", region: "Africa", freq: "Online" },
+  { id: "so-bbc-somali",name: "BBC Somali",             country: "Somalia",       lang: "Somali",    lat: 2.05,  lng: 45.34, url: "https://stream.live.vc.bbcmedia.co.uk/bbc_somali_radio", region: "Africa", freq: "Online" },
+  { id: "rw-kigali",   name: "Radio Rwanda",            country: "Rwanda",        lang: "Kinyarwanda",lat: -1.94, lng: 29.87, url: "https://stream.radio.co/s8e3d1c5a2/listen", region: "Africa", freq: "100.7 FM" },
+  { id: "cd-okapi",    name: "Radio Okapi (UN)",        country: "DR Congo",      lang: "French",    lat: -4.32, lng: 15.32, url: "https://stream.radio.co/sa2e7c1d05/listen", region: "Africa", freq: "103.5 FM" },
+  { id: "ma-medi1",    name: "Medi 1 Radio",            country: "Morocco",       lang: "Arabic",    lat: 33.97, lng: -6.85, url: "https://stream.radio.co/s1a4e2f3b7/listen", region: "Africa", freq: "97.5 FM" },
+];
+
+export const REGIONS = ["All", "Middle East", "Europe", "Asia", "Americas", "Africa"];
+
+// Simulated transcription phrases per language
+export const TRANSCRIPTION_PHRASES = {
+  Farsi: [
+    "به رادیو ایران خوش آمدید",
+    "اخبار ساعت هشت صبح به وقت تهران",
+    "وضعیت آب و هوا برای فردا",
+    "گزارش ویژه از مجلس شورای اسلامی",
+    "قیمت دلار در بازار آزاد امروز",
+  ],
+  Turkish: [
+    "TRT Radyo Bir'den haberler",
+    "Ankara'dan son dakika gelişmeleri",
+    "Hava durumu raporu",
+    "Cumhurbaşkanlığı açıklama yaptı",
+  ],
+  Ukrainian: [
+    "Суспільне радіо, новини",
+    "Зведення Генерального штабу ЗСУ",
+    "Прогноз погоди на завтра по Києву",
+    "Повітряна тривога оголошена у кількох областях",
+  ],
+  Arabic: [
+    "أهلاً بكم في نشرة الأخبار",
+    "آخر التطورات في المنطقة",
+    "تقرير خاص عن الأوضاع الاقتصادية",
+    "حالة الطقس في العالم العربي",
+    "نشرة الأخبار الرئيسية",
+  ],
+  Hebrew: [
+    "כאן רשת ב, חדשות",
+    "מבזק חדשות מהשעה האחרונה",
+    "דיווח ביטחוני מהצפון",
+    "תחזית מזג האוויר להיום",
+  ],
+  French: [
+    "Bienvenue sur FIP, la radio musicale",
+    "Il est quinze heures à Paris",
+    "Les titres de l'actualité",
+    "Maintenant, un classique de la chanson française",
+  ],
+  German: [
+    "Nachrichten aus dem Deutschlandfunk",
+    "Die Bundesregierung hat heute bekannt gegeben",
+    "Das Wetter für morgen: bewölkt mit Aufheiterungen",
+  ],
+  Russian: [
+    "Вы слушаете Радио Маяк",
+    "Последние новости дня",
+    "Погода на завтра в Москве — переменная облачность",
+    "Обзор международных событий",
+  ],
+  Polish: [
+    "Polskie Radio Program Pierwszy",
+    "Wiadomości z kraju i ze świata",
+    "Prognoza pogody na jutro",
+  ],
+  Spanish: [
+    "Buenos días, son las ocho de la mañana",
+    "Las noticias de hoy en Radio Nacional",
+    "El tiempo para esta tarde: soleado con nubes",
+    "Informe especial sobre la economía",
+  ],
+  Portuguese: [
+    "Rádio Cultura, São Paulo",
+    "As principais notícias do dia",
+    "O tempo agora em todo o Brasil",
+  ],
+  Japanese: [
+    "NHKラジオ第一放送です",
+    "ニュースをお伝えします",
+    "東京の天気予報です — 晴れ時々曇り",
+  ],
+  Korean: [
+    "KBS 제1라디오입니다",
+    "주요 뉴스를 전해드립니다",
+    "오늘의 날씨입니다 — 서울 맑음",
+  ],
+  Mandarin: [
+    "中国国际广播电台",
+    "新闻和评论节目",
+    "今天的天气预报 — 北京多云",
+  ],
+  Hindi: [
+    "ऑल इंडिया रेडियो से समाचार",
+    "आज की मुख्य खबरें",
+    "मौसम का हाल — दिल्ली में गर्मी",
+  ],
+  Urdu: [
+    "ریڈیو پاکستان اسلام آباد",
+    "آج کی اہم خبریں",
+    "موسم کا حال — لاہور میں گرم",
+  ],
+  "Dari/Pashto": [
+    "رادیو آزادی",
+    "خبرهای مهم روز",
+    "وضعیت هوا برای کابل",
+  ],
+  Thai: [
+    "สถานีวิทยุ FM91 ประเทศไทย",
+    "ข่าวสำคัญวันนี้",
+    "พยากรณ์อากาศ กรุงเทพ",
+  ],
+  Vietnamese: [
+    "Đài Tiếng nói Việt Nam",
+    "Bản tin thời sự",
+    "Dự báo thời tiết — Hà Nội mây rải rác",
+  ],
+  Filipino: [
+    "DZBB Super Radyo, Maynila",
+    "Mga balitang bayan ngayong araw",
+    "Lagay ng panahon sa Metro Manila",
+  ],
+  Swahili: [
+    "Habari za leo kutoka Nairobi",
+    "Taarifa ya hali ya hewa",
+    "Matukio muhimu ya siku",
+  ],
+  Amharic: [
+    "ፋና ሬዲዮ ዜና",
+    "የዛሬ ዋና ዋና ዜናዎች",
+    "የአየር ሁኔታ ትንበያ",
+  ],
+  Hausa: [
+    "BBC Hausa ne, labarai",
+    "Manyan labarun yau",
+    "Hasashen yanayi na gobe",
+  ],
+  Somali: [
+    "BBC Soomaali, wararka",
+    "Wararka ugu muhiimsan maanta",
+  ],
+  Dutch: [
+    "NPO Radio 1, het nieuws",
+    "De belangrijkste gebeurtenissen van vandaag",
+    "Het weerbericht voor morgen",
+  ],
+  Italian: [
+    "RAI Radio Uno, giornale radio",
+    "Le notizie principali di oggi",
+    "Previsioni del tempo per domani",
+  ],
+  Swedish: [
+    "Sveriges Radio P1, nyheter",
+    "De viktigaste nyheterna idag",
+    "Väderleksrapporten",
+  ],
+  Norwegian: [
+    "NRK P1, nyheter",
+    "Dagens viktigste nyheter",
+    "Værmeldingen for i morgen",
+  ],
+  Finnish: [
+    "Yle Radio 1, uutiset",
+    "Tärkeimmät uutiset tänään",
+    "Sääennuste huomiselle",
+  ],
+  Romanian: [
+    "Radio România Actualități",
+    "Principalele știri ale zilei",
+    "Prognoza meteo pentru mâine",
+  ],
+  Greek: [
+    "ΕΡΑ, τα νέα",
+    "Τα κυριότερα νέα σήμερα",
+    "Πρόγνωση καιρού",
+  ],
+  Czech: [
+    "Radiožurnál, zprávy",
+    "Nejdůležitější zprávy dne",
+    "Předpověď počasí na zítra",
+  ],
+  English: [
+    "You're listening to the news hour",
+    "Coming up next, our special report",
+    "Weather update for the region",
+    "Breaking news this hour",
+    "In international headlines today",
+  ],
+  Pidgin: [
+    "Wazobia FM, Lagos",
+    "Wetin dey happen for Nigeria today",
+    "E go sunny well well for Lagos",
+  ],
+  Burmese: [
+    "DVB ရေဒီယို သတင်း",
+    "ယနေ့ အရေးကြီးသတင်း",
+  ],
+  Bengali: [
+    "বিবিসি বাংলা, সংবাদ",
+    "আজকের প্রধান খবর",
+  ],
+  Kinyarwanda: [
+    "Radio Rwanda, amakuru",
+    "Amakuru y'ingenzi ya none",
+  ],
+};
