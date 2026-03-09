@@ -52,6 +52,9 @@ export default function App() {
   const [tab, setTab] = useState('stations');
   const [wsConnected, setWsConnected] = useState(false);
   const [pipelineStatus, setPipelineStatus] = useState('');
+  const [alerts, setAlerts] = useState([]);
+  const [monitorStatus, setMonitorStatus] = useState({ active: false, stations: [] });
+  const [alertBannerDismissed, setAlertBannerDismissed] = useState(false);
 
   const audioRef = useRef(null);
   const hlsRef = useRef(null);
@@ -73,10 +76,25 @@ export default function App() {
       ws = new WebSocket(wsUrl);
       ws.onopen = () => setWsConnected(true);
       ws.onclose = () => { setWsConnected(false); setTimeout(connect, 3000); };
-      ws.onmessage = (e) => { try { const msg = JSON.parse(e.data); if (msg.type === 'pipeline_result' && msg.success) console.log('[WS]', msg); } catch(err) {} };
+      ws.onmessage = (e) => { try { const msg = JSON.parse(e.data);
+        if (msg.type === 'pipeline_result' && msg.success) console.log('[WS]', msg);
+        if (msg.type === 'alert') { setAlerts(prev => [msg.alert, ...prev].slice(0, 200)); setAlertBannerDismissed(false); }
+        if (msg.type === 'monitor_update') { setMonitorStatus(prev => ({ ...prev, stations: prev.stations.map(s => s.id === msg.station_id ? { ...s, ...msg.state } : s) })); }
+      } catch(err) {} };
     };
     connect();
     return () => { if (ws) ws.close(); };
+  }, []);
+
+  // Fetch alerts + monitor status
+  useEffect(() => {
+    if (!API_URL) return;
+    fetch(`${API_URL}/api/alerts?limit=50`).then(r => r.json()).then(d => Array.isArray(d) && setAlerts(d)).catch(() => {});
+    fetch(`${API_URL}/api/monitor/status`).then(r => r.json()).then(setMonitorStatus).catch(() => {});
+    const interval = setInterval(() => {
+      fetch(`${API_URL}/api/monitor/status`).then(r => r.json()).then(setMonitorStatus).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const cleanupAudio = useCallback(() => {
@@ -297,19 +315,88 @@ export default function App() {
         </div>
       </div>
 
+      {/* ALERT BANNER */}
+      {alerts.length > 0 && !alertBannerDismissed && (() => {
+        const recent = alerts.filter(a => !a.acknowledged && (a.threat_level || 0) >= 7);
+        if (recent.length === 0) return null;
+        const highest = recent.reduce((max, a) => (a.threat_level || 0) > max ? a.threat_level : max, 0);
+        return (
+          <div style={{ background: highest >= 9 ? 'rgba(255,20,20,.2)' : 'rgba(255,40,40,.12)', border: `1px solid ${highest >= 9 ? 'rgba(255,20,20,.7)' : 'rgba(255,40,40,.4)'}`, borderRadius: 8, padding: '10px 16px', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: highest >= 9 ? 'blink 1s infinite' : 'blink 2s infinite' }}>
+            <div>
+              <span style={{ color: '#ff4040', fontFamily: "'Orbitron',sans-serif", fontSize: 13, letterSpacing: 2, fontWeight: 700 }}>THREAT ALERT — LEVEL {highest}/10</span>
+              <span style={{ color: 'rgba(255,100,100,.7)', fontSize: 11, marginLeft: 12 }}>{recent.length} active alert(s) — {recent[0]?.station_name}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="rbtn" style={{ borderColor: '#ff4040', color: '#ff4040' }} onClick={() => setTab('alerts')}>VIEW ALERTS</button>
+              <button onClick={() => setAlertBannerDismissed(true)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.3)', cursor: 'pointer', fontSize: 16 }}>x</button>
+            </div>
+          </div>
+        );
+      })()}
+
       <WorldMap stations={filtered} activeStation={activeStation} onSelect={playStation} />
 
       {/* CONTROLS */}
       <div style={{ display: 'flex', gap: 6, margin: '12px 0', flexWrap: 'wrap', alignItems: 'center' }}>
         {REGIONS.map(r => (<button key={r} className={`rbtn ${region === r ? 'active' : ''}`} onClick={() => setRegion(r)}>{r}</button>))}
         <div style={{ flex: 1 }} />
+        <button className={`rbtn ${tab === 'alerts' ? 'active' : ''}`} style={{ borderColor: alerts.some(a => (a.threat_level||0) >= 7 && !a.acknowledged) ? '#ff4040' : undefined, color: alerts.some(a => (a.threat_level||0) >= 7 && !a.acknowledged) ? '#ff4040' : undefined }} onClick={() => setTab(tab === 'alerts' ? 'stations' : 'alerts')}>ALERTS{alerts.filter(a => !a.acknowledged).length > 0 ? ` (${alerts.filter(a => !a.acknowledged).length})` : ''}</button>
+        <button className={`rbtn blue ${tab === 'monitor' ? 'active' : ''}`} onClick={() => setTab(tab === 'monitor' ? 'stations' : 'monitor')}>MONITOR{monitorStatus.active ? ` (${monitorStatus.station_count || 0})` : ''}</button>
         <button className={`rbtn blue ${tab === 'prompt' ? 'active' : ''}`} onClick={() => setTab(tab === 'prompt' ? 'stations' : 'prompt')}>PROMPT</button>
         <button className={`rbtn blue ${tab === 'config' ? 'active' : ''}`} onClick={() => setTab(tab === 'config' ? 'stations' : 'config')}>WHISPER</button>
-        {API_URL && <button className="rbtn orange" onClick={async () => { try { const r = await fetch(`${API_URL}/health`); const h = await r.json(); alert(`Groq: ${h.services?.groq?'OK':'MISSING'}\nClaude: ${h.services?.claude?'OK':'MISSING'}\nDB: ${h.services?.database?'OK':'NONE'}\nUptime: ${Math.floor(h.uptime)}s`); } catch(e) { alert('Unreachable: '+e.message); } }}>HEALTH</button>}
+        {API_URL && <button className="rbtn orange" onClick={async () => { try { const r = await fetch(`${API_URL}/health`); const h = await r.json(); alert(`Groq: ${h.services?.groq?'OK':'MISSING'}\nClaude: ${h.services?.claude?'OK':'MISSING'}\nDB: ${h.services?.database?'OK':'NONE'}\nMonitor: ${h.monitor?.stations} stations\nUptime: ${Math.floor(h.uptime)}s`); } catch(e) { alert('Unreachable: '+e.message); } }}>HEALTH</button>}
       </div>
 
       {tab === 'prompt' && (<div style={{ background: 'rgba(100,150,255,.04)', border: '1px solid rgba(100,150,255,.15)', borderRadius: 8, padding: 16, marginBottom: 14, fontSize: 11.5, lineHeight: 1.7, whiteSpace: 'pre-wrap', maxHeight: 400, overflow: 'auto', color: '#8ab4ff' }}><div style={{ fontFamily: "'Orbitron'", fontSize: 10, color: '#6496ff', marginBottom: 10, letterSpacing: 2 }}>CLAUDE TRANSLATION SYSTEM PROMPT</div>{TRANSLATION_SYSTEM_PROMPT}</div>)}
       {tab === 'config' && (<div style={{ background: 'rgba(255,180,50,.04)', border: '1px solid rgba(255,180,50,.15)', borderRadius: 8, padding: 16, marginBottom: 14, fontSize: 11.5, lineHeight: 1.7, whiteSpace: 'pre-wrap', maxHeight: 400, overflow: 'auto', color: '#e8c87a' }}><div style={{ fontFamily: "'Orbitron'", fontSize: 10, color: '#e8a030', marginBottom: 10, letterSpacing: 2 }}>WHISPER CONFIG</div>{JSON.stringify(WHISPER_CONFIG, null, 2)}<div style={{ marginTop: 16, borderTop: '1px solid rgba(255,180,50,.1)', paddingTop: 12 }}><div style={{ color: '#e8a030', marginBottom: 8 }}>LANGUAGE HINTS:</div>{JSON.stringify(LANGUAGE_HINTS, null, 2)}</div></div>)}
+
+      {/* ALERTS TAB */}
+      {tab === 'alerts' && (
+        <div style={{ background: 'rgba(255,40,40,.04)', border: '1px solid rgba(255,40,40,.15)', borderRadius: 8, padding: 16, marginBottom: 14, maxHeight: 500, overflow: 'auto' }}>
+          <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 10, color: '#ff4040', marginBottom: 10, letterSpacing: 2 }}>THREAT ALERTS — {alerts.length} TOTAL</div>
+          {alerts.length === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,.2)', textAlign: 'center', padding: 30, fontSize: 11 }}>No alerts yet. The auto-monitor scans priority stations every 30s and flags threat levels 7+.</div>
+          ) : alerts.map((a, i) => (
+            <div key={a.id || i} style={{ padding: '10px 12px', marginBottom: 6, background: `rgba(255,40,40,${(a.threat_level||0) >= 9 ? '.12' : '.06'})`, borderLeft: `3px solid ${(a.threat_level||0) >= 9 ? '#ff2020' : (a.threat_level||0) >= 7 ? '#ff6040' : '#e8a030'}`, borderRadius: '0 6px 6px 0', fontSize: 11, animation: 'fadeIn .3s ease', opacity: a.acknowledged ? 0.5 : 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#ff4040', fontWeight: 700 }}>THREAT {a.threat_level}/10 — {a.station_name} ({a.country})</span>
+                <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 9 }}>{a.created_at ? new Date(a.created_at).toLocaleString() : ''}</span>
+              </div>
+              {(a.alert_triggers || []).length > 0 && <div style={{ color: '#ff8060', fontSize: 10, marginTop: 4 }}>Triggers: {a.alert_triggers.join(' | ')}</div>}
+              <div style={{ color: 'rgba(255,255,255,.6)', marginTop: 4 }}>{a.translation_text || a.transcription_text}</div>
+              {!a.acknowledged && API_URL && (
+                <button onClick={async () => { try { await fetch(`${API_URL}/api/alerts/${a.id}/acknowledge`, { method: 'POST' }); setAlerts(prev => prev.map(x => (x.id||i) === (a.id||i) ? { ...x, acknowledged: true } : x)); } catch(e){} }} style={{ marginTop: 6, padding: '3px 10px', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.4)', borderRadius: 3, fontSize: 9 }}>ACKNOWLEDGE</button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MONITOR TAB */}
+      {tab === 'monitor' && (
+        <div style={{ background: 'rgba(0,255,136,.03)', border: '1px solid rgba(0,255,136,.12)', borderRadius: 8, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 10, color: '#00ff88', marginBottom: 10, letterSpacing: 2 }}>
+            AUTO-MONITOR — {monitorStatus.active ? 'ACTIVE' : 'INACTIVE'} — {monitorStatus.station_count || monitorStatus.stations?.length || 0} PRIORITY STATIONS
+          </div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>Server automatically scans priority stations every 30s. Threats level 7+ trigger alerts + notifications.</div>
+          {(monitorStatus.stations || []).length === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,.2)', textAlign: 'center', padding: 20, fontSize: 11 }}>{API_URL ? 'Loading monitor status...' : 'Connect backend to enable auto-monitoring'}</div>
+          ) : (monitorStatus.stations || []).map(s => (
+            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', marginBottom: 4, background: 'rgba(0,255,136,.03)', border: `1px solid ${(s.lastThreatLevel||0) >= 7 ? 'rgba(255,40,40,.3)' : 'rgba(0,255,136,.06)'}`, borderRadius: 4, fontSize: 11 }}>
+              <div>
+                <span style={{ color: (s.lastThreatLevel||0) >= 7 ? '#ff4040' : '#00ff88', fontWeight: 500 }}>{s.name}</span>
+                <span style={{ color: 'rgba(255,255,255,.3)', marginLeft: 8, fontSize: 9 }}>{s.country} • {(s.tags || []).join(', ')}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 9 }}>
+                {(s.lastThreatLevel||0) > 0 && <span style={{ color: (s.lastThreatLevel||0) >= 7 ? '#ff4040' : (s.lastThreatLevel||0) >= 4 ? '#e8a030' : 'rgba(0,255,136,.4)' }}>THREAT:{s.lastThreatLevel}</span>}
+                <span style={{ color: s.status === 'scanning' ? '#6496ff' : s.status === 'error' ? '#ff5050' : 'rgba(0,255,136,.5)', animation: s.status === 'scanning' ? 'blink 1s infinite' : 'none' }}>{(s.status || 'PENDING').toUpperCase()}</span>
+                <span style={{ color: 'rgba(255,255,255,.2)' }}>{s.lastScan ? new Date(s.lastScan).toLocaleTimeString() : '—'}</span>
+                {s.error && <span style={{ color: '#ff5050' }} title={s.error}>!</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* MAIN GRID */}
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 14 }}>
