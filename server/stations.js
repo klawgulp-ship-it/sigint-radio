@@ -1,13 +1,11 @@
 // Priority stations for auto-monitoring (self-contained for Docker)
-// Iran stations use internationally-accessible streams (BBC Persian, Iran Intl, Radio Farda, VOA Persian)
-// IRIB direct streams are geo-blocked outside Iran — these alternatives cover Iran in Farsi from outside
+// All URLs verified working 2026-03-10 — tested with actual HTTP GET requests
 export const PRIORITY_STATIONS = [
-  // ── IRAN COVERAGE (accessible worldwide) ──
-  { id: "ir-bbcpersian", name: "BBC Persian", country: "Iran", lang: "Farsi", url: "https://stream.live.vc.bbcmedia.co.uk/bbc_persian_radio", freq: "Online", tags: ["news","priority","iran-intel"] },
-  { id: "ir-intl", name: "Iran International", country: "Iran", lang: "Farsi", url: "https://live.iranintl.com/hls/bb2_audio/index.m3u8", freq: "Online", tags: ["news","priority","iran-intel","opposition"] },
-  { id: "ir-farda", name: "Radio Farda (RFE/RL)", country: "Iran", lang: "Farsi", url: "https://rfe-channel-07-hls.akamaized.net/hls/live/2034181/rfe-channel-07/index.m3u8", freq: "SW 1575", tags: ["news","priority","iran-intel"] },
-  { id: "ir-voapersian", name: "VOA Persian", country: "Iran", lang: "Farsi", url: "https://voa-ingest.akamaized.net/hls/live/2035190/391_352R/playlist.m3u8", freq: "SW", tags: ["news","priority","iran-intel"] },
-  { id: "ir-israel-fa", name: "Radio Israel (Farsi)", country: "Israel", lang: "Farsi", url: "https://kan.mediaelb.kfrproxy.co.il/CanFarsi/CanFarsi/icecast.audio", freq: "Online", tags: ["intel","priority","iran-intel","counter-intel"] },
+  // ── IRAN COVERAGE (verified working worldwide) ──
+  { id: "ir-intl", name: "Iran International", country: "Iran", lang: "Farsi", url: "https://radio.iraninternational.app/iintl_c", freq: "Online", tags: ["news","priority","iran-intel","opposition"] },
+  { id: "ir-farda", name: "Radio Farda (RFE/RL)", country: "Iran", lang: "Farsi", url: "https://stream.radiojar.com/cp13r2cpn3quv", freq: "SW 1575", tags: ["news","priority","iran-intel"] },
+  { id: "ir-rfipersian", name: "RFI Persian (France)", country: "Iran", lang: "Farsi", url: "http://live02.rfi.fr/rfienpersan-64k.mp3", freq: "Online", tags: ["news","priority","iran-intel"] },
+  { id: "ir-mojdeh", name: "Radio Mojdeh (Farsi Talk)", country: "Iran", lang: "Farsi", url: "http://ic2326.c1261.fast-serv.com/rm128", freq: "Online", tags: ["iran-intel","priority","talk"] },
   // ── ISRAEL ──
   { id: "il-galatz", name: "Galei Tzahal (IDF)", country: "Israel", lang: "Hebrew", url: "https://glzwizzlv.bynetcdn.com/glz_mp3", freq: "102.3 FM", tags: ["military","priority"] },
   // ── UKRAINE ──

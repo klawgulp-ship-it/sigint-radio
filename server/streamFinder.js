@@ -18,12 +18,11 @@ const CACHE_TTL = 15 * 60 * 1000; // 15 min
 
 // Search queries per station to find streams on RadioBrowser
 const SEARCH_QUERIES = {
-  // Iran — internationally accessible Farsi stations
-  'ir-bbcpersian': { name: 'BBC Persian', country: '', tags: 'bbc,persian' },
+  // Iran — internationally accessible Farsi stations (verified working)
   'ir-intl':       { name: 'Iran International', country: '', tags: 'iran,international' },
   'ir-farda':      { name: 'Radio Farda', country: '', tags: 'farda' },
-  'ir-voapersian': { name: 'VOA Persian', country: '', tags: 'voa,persian' },
-  'ir-israel-fa':  { name: 'Israel Persian', country: 'Israel', tags: 'persian,farsi' },
+  'ir-rfipersian': { name: 'RFI Persian', country: '', tags: 'rfi,persian' },
+  'ir-mojdeh':     { name: 'Radio Mojdeh', country: '', tags: 'mojdeh,persian' },
   'ir-zamaneh':    { name: 'Radio Zamaneh', country: '', tags: 'zamaneh' },
   // Iran — IRIB direct (geo-restricted fallbacks, RadioBrowser may find mirrors)
   'ir-irib':       { name: 'IRIB', country: 'Iran', tags: 'iran,irib' },

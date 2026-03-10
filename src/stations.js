@@ -5,13 +5,12 @@
 
 export const STATIONS = [
   // ─── MIDDLE EAST ───────────────────────────────────────────
-  // ── IRAN: Internationally-accessible Farsi stations ──
+  // ── IRAN: Internationally-accessible Farsi stations (VERIFIED WORKING) ──
   // These broadcast FROM outside Iran IN Farsi — always reachable, carry critical Iran intel
-  { id: "ir-bbcpersian", name: "BBC Persian",             country: "Iran",          lang: "Farsi",     lat: 35.69, lng: 51.39, url: "https://stream.live.vc.bbcmedia.co.uk/bbc_persian_radio", region: "Middle East", freq: "Online", tags: ["news","priority","iran-intel"] },
-  { id: "ir-intl",     name: "Iran International",       country: "Iran",          lang: "Farsi",     lat: 35.70, lng: 51.41, url: "https://live.iranintl.com/hls/bb2_audio/index.m3u8", region: "Middle East", freq: "Online", tags: ["news","priority","iran-intel","opposition"] },
-  { id: "ir-farda",    name: "Radio Farda (RFE/RL)",     country: "Iran",          lang: "Farsi",     lat: 35.68, lng: 51.38, url: "https://rfe-channel-07-hls.akamaized.net/hls/live/2034181/rfe-channel-07/index.m3u8", region: "Middle East", freq: "SW 1575", tags: ["news","priority","iran-intel"] },
-  { id: "ir-voapersian",name: "VOA Persian",             country: "Iran",          lang: "Farsi",     lat: 35.71, lng: 51.40, url: "https://voa-ingest.akamaized.net/hls/live/2035190/391_352R/playlist.m3u8", region: "Middle East", freq: "SW", tags: ["news","priority","iran-intel"] },
-  { id: "ir-israel-fa",name: "Radio Israel (Farsi)",     country: "Israel",        lang: "Farsi",     lat: 32.07, lng: 34.76, url: "https://kan.mediaelb.kfrproxy.co.il/CanFarsi/CanFarsi/icecast.audio", region: "Middle East", freq: "Online", tags: ["intel","counter-intel","iran-intel"] },
+  { id: "ir-intl",     name: "Iran International",       country: "Iran",          lang: "Farsi",     lat: 35.70, lng: 51.41, url: "https://radio.iraninternational.app/iintl_c", region: "Middle East", freq: "Online", tags: ["news","priority","iran-intel","opposition"] },
+  { id: "ir-farda",    name: "Radio Farda (RFE/RL)",     country: "Iran",          lang: "Farsi",     lat: 35.68, lng: 51.38, url: "https://stream.radiojar.com/cp13r2cpn3quv", region: "Middle East", freq: "SW 1575", tags: ["news","priority","iran-intel"] },
+  { id: "ir-rfipersian",name: "RFI Persian (France)",    country: "Iran",          lang: "Farsi",     lat: 35.69, lng: 51.39, url: "http://live02.rfi.fr/rfienpersan-64k.mp3", region: "Middle East", freq: "Online", tags: ["news","priority","iran-intel"] },
+  { id: "ir-mojdeh",   name: "Radio Mojdeh (Farsi Talk)",country: "Iran",          lang: "Farsi",     lat: 35.71, lng: 51.40, url: "http://ic2326.c1261.fast-serv.com/rm128", region: "Middle East", freq: "Online", tags: ["iran-intel","talk"] },
   { id: "ir-zamaneh",  name: "Radio Zamaneh",            country: "Iran",          lang: "Farsi",     lat: 35.71, lng: 51.40, url: "https://stream.radio.co/s7e1aa06ed/listen", region: "Middle East", freq: "Online", tags: ["iran-intel","opposition"] },
   // ── IRAN: IRIB direct streams (geo-restricted, may not work outside Iran) ──
   { id: "ir-irib",     name: "IRIB Radio Iran",          country: "Iran",          lang: "Farsi",     lat: 35.69, lng: 51.39, url: "http://s2.cdn3.iranseda.ir:1935/liveedge/radio-iran/playlist.m3u8", region: "Middle East", freq: "558 AM", tags: ["state","geo-restricted"] },
