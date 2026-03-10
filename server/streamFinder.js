@@ -18,13 +18,17 @@ const CACHE_TTL = 15 * 60 * 1000; // 15 min
 
 // Search queries per station to find streams on RadioBrowser
 const SEARCH_QUERIES = {
-  // Iran
+  // Iran — internationally accessible Farsi stations
+  'ir-bbcpersian': { name: 'BBC Persian', country: '', tags: 'bbc,persian' },
+  'ir-intl':       { name: 'Iran International', country: '', tags: 'iran,international' },
+  'ir-farda':      { name: 'Radio Farda', country: '', tags: 'farda' },
+  'ir-voapersian': { name: 'VOA Persian', country: '', tags: 'voa,persian' },
+  'ir-israel-fa':  { name: 'Israel Persian', country: 'Israel', tags: 'persian,farsi' },
+  'ir-zamaneh':    { name: 'Radio Zamaneh', country: '', tags: 'zamaneh' },
+  // Iran — IRIB direct (geo-restricted fallbacks, RadioBrowser may find mirrors)
   'ir-irib':       { name: 'IRIB', country: 'Iran', tags: 'iran,irib' },
   'ir-irib-news':  { name: 'Iran news', country: 'Iran', tags: 'news,iran' },
-  'ir-irib-quran': { name: 'Quran', country: 'Iran', tags: 'quran,iran' },
   'ir-goftogoo':   { name: 'goftogoo', country: 'Iran', tags: 'iran,talk' },
-  'ir-payam':      { name: 'payam', country: 'Iran', tags: 'iran' },
-  'ir-farhang':    { name: 'farhang', country: 'Iran', tags: 'iran,culture' },
   // Israel
   'il-galatz':     { name: 'Galei Zahal', country: 'Israel', tags: 'military,israel' },
   'il-kan':        { name: 'Kan', country: 'Israel', tags: 'kan,israel' },
