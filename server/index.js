@@ -7,6 +7,7 @@ import pg from 'pg';
 import crypto from 'crypto';
 import { Readable } from 'stream';
 import { PRIORITY_STATIONS } from './stations.js';
+import { getWorkingUrl, refreshAllStreams, getStreamStatus } from './streamFinder.js';
 
 const app = express();
 app.use(cors());
@@ -541,7 +542,9 @@ app.post('/api/pipeline', async (req, res) => {
   if (!url) return res.status(400).json({ error: 'Missing url' });
   if (!GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
   try {
-    const result = await runPipelineInternal({ url, station_id, station_name, country, freq, lang, duration });
+    // Use stream discovery if station_id is provided
+    const streamUrl = station_id ? (await getWorkingUrl(station_id, [url])) || url : url;
+    const result = await runPipelineInternal({ url: streamUrl, station_id, station_name, country, freq, lang, duration });
     res.json(result);
   } catch (err) {
     console.error('[PIPELINE] Error:', err.message);
@@ -560,8 +563,14 @@ async function scanStation(station) {
   broadcast({ type: 'monitor_update', station_id: station.id, state: monitorState.get(station.id) });
 
   try {
+    // Use dynamic stream discovery — tries cached URL, fallbacks, then RadioBrowser
+    const streamUrl = await getWorkingUrl(station.id, [station.url]);
+    if (!streamUrl) {
+      throw new Error('No working stream URL found');
+    }
+
     const result = await runPipelineInternal({
-      url: station.url,
+      url: streamUrl,
       station_id: station.id,
       station_name: station.name,
       country: station.country,
@@ -649,6 +658,20 @@ app.get('/api/monitor/status', (req, res) => {
   res.json({ active: !!monitorInterval, station_count: PRIORITY_STATIONS.length, stations });
 });
 
+// ─── STREAM DISCOVERY ROUTES ─────────────────────────────────
+app.get('/api/streams/status', (req, res) => {
+  res.json(getStreamStatus());
+});
+
+app.post('/api/streams/refresh', async (req, res) => {
+  try {
+    await refreshAllStreams(PRIORITY_STATIONS);
+    res.json({ success: true, status: getStreamStatus() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── STATS & DATA ROUTES ─────────────────────────────────────
 app.get('/api/stats', async (_, res) => {
   if (!pool) return res.json({ total: 0, languages: [], domains: [], pairs: 0, alerts: 0, message: 'No database configured' });
@@ -702,6 +725,7 @@ app.get('/', (_, res) => res.json({
   version: '2.0.0',
   endpoints: ['/api/proxy', '/api/capture', '/api/transcribe', '/api/translate', '/api/pipeline',
     '/api/alerts', '/api/alerts/:id/acknowledge', '/api/monitor/status',
+    '/api/streams/status', '/api/streams/refresh',
     '/api/stats', '/api/pairs', '/api/transcriptions', '/health'],
 }));
 
@@ -720,5 +744,8 @@ initDB().then(() => {
     console.log(`║  Telegram:    ${TELEGRAM_BOT_TOKEN ? '✅ READY' : '○ Not set'}                         ║`);
     console.log(`╚══════════════════════════════════════════════════╝\n`);
     startAutoMonitor();
+
+    // Refresh all stream URLs on startup (background)
+    refreshAllStreams(PRIORITY_STATIONS).catch(e => console.error('[STREAM] Initial refresh error:', e.message));
   });
 });
