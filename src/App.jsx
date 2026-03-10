@@ -115,13 +115,23 @@ export default function App() {
     if (audioCtxRef.current.state === 'suspended') await audioCtxRef.current.resume();
   }, []);
 
-  const connectAndPlay = useCallback((audio) => {
-    try { if (!sourceRef.current) { sourceRef.current = audioCtxRef.current.createMediaElementSource(audio); sourceRef.current.connect(gainRef.current); } } catch(e) {}
-    gainRef.current.gain.value = volume;
-    audio.play().catch(() => {});
+  const connectAndPlay = useCallback((audio, station) => {
+    // Try to connect to Web Audio for visualizer, but don't let it block playback
+    try {
+      if (!sourceRef.current && audioCtxRef.current) {
+        sourceRef.current = audioCtxRef.current.createMediaElementSource(audio);
+        sourceRef.current.connect(gainRef.current);
+      }
+      if (gainRef.current) gainRef.current.gain.value = volume;
+    } catch(e) {
+      // CORS may block Web Audio — that's fine, audio still plays
+      console.log('[AUDIO] Web Audio connect failed (CORS) — audio will play without visualizer');
+    }
+    audio.volume = volume;
+    audio.play().catch(e => console.log('[AUDIO] Play failed:', e.message));
     setIsPlaying(true);
-    setStats(prev => ({ ...prev, sessions: prev.sessions + 1, langs: new Set([...prev.langs, activeStation?.lang].filter(Boolean)) }));
-  }, [volume, activeStation]);
+    setStats(prev => ({ ...prev, sessions: prev.sessions + 1, langs: new Set([...prev.langs, station?.lang].filter(Boolean)) }));
+  }, [volume]);
 
   const isHLS = (url) => /\.m3u8(\?|$)/i.test(url);
 
@@ -160,28 +170,29 @@ export default function App() {
 
     try {
       await initAudioContext();
-      const audio = new Audio();
-      audio.crossOrigin = 'anonymous';
-      audioRef.current = audio;
 
       // Build list of URLs to try in order
       const urls = [];
       if (API_URL) urls.push({ url: `${API_URL}/api/proxy?url=${encodeURIComponent(station.url)}`, label: 'proxy' });
       urls.push({ url: station.url, label: 'direct' });
-      // For HLS via proxy, also try direct HLS with hls.js
       if (API_URL && isHLS(station.url)) urls.splice(1, 0, { url: station.url, label: 'direct-hls' });
 
       let connected = false;
       for (const { url, label } of urls) {
         console.log(`[AUDIO] Trying ${label}: ${url.slice(0, 80)}...`);
-        // Reset for each attempt
+
+        // Fresh audio element for each attempt
         if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-        audio.src = ''; audio.load();
+        if (sourceRef.current) { try { sourceRef.current.disconnect(); } catch(e){} sourceRef.current = null; }
+        const audio = new Audio();
+        // Only set crossOrigin for proxy URLs (same origin handles CORS)
+        if (label === 'proxy') audio.crossOrigin = 'anonymous';
+        audioRef.current = audio;
 
         const ok = await tryPlaySource(audio, url, label);
         if (ok) {
           console.log(`[AUDIO] Connected via ${label}`);
-          connectAndPlay(audio);
+          connectAndPlay(audio, station);
           connected = true;
           break;
         }
